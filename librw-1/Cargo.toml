@@ -1,0 +1,11 @@
+[package]
+name = "rw-1"
+edition = "2021"
+version = "0.0.1"
+
+[lib]
+crate_type = ["cdylib"]
+
+[dependencies]
+nix = "0.26.2"
+libc = "0.2.141"

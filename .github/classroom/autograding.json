@@ -1,0 +1,44 @@
+{
+  "tests": [
+    {
+      "name": "Build",
+      "setup": "",
+      "run": "timeout 5m make all",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 5,
+      "points": null
+    },
+    {
+      "name": "Task 1.1: Test wrapper",
+      "setup": "",
+      "run": "timeout 1m python3 tests/test_wrapper.py",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 1,
+      "points": 5
+    },
+    {
+      "name": "Task 1.2: Test asm",
+      "setup": "",
+      "run": "timeout 1m python3 tests/test_asm.py",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 1,
+      "points": 10
+    },
+    {
+      "name": "Task 1.3: Test tracer",
+      "setup": "",
+      "run": "timeout 1m python3 tests/test_tracer.py",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 1,
+      "points": 15
+    }
+  ]
+}

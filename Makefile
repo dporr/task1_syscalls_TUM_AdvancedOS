@@ -8,17 +8,14 @@ CARGO ?= cargo
 RUSTFLAGS ?= -g
 
 # this target should build all executables for all tests
-all:
-	@echo "Please set a concrete build command here"
-	false
 
 # C example:
-#all: librw_1.so librw_2.so
-#librw_1.so: task-1_1.c
-#	$(CC) $(CFLAGS) -shared -fPIC -ldl -o $@ $<
-#
-#librw_2.so: task-1_2.c
-#	$(CC) $(CFLAGS) -shared -fPIC -ldl -o $@ $<
+all: librw_1.so librw_2.so
+librw_1.so: task-1_1.c
+	$(CC) $(CFLAGS) -shared -fPIC -ldl -o $@ $<
+
+librw_2.so: task-1_2.c
+	$(CC) $(CFLAGS) -shared -fPIC -ldl -o $@ $<
 
 # Rust example:
 #all:

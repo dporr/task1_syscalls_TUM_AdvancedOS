@@ -17,6 +17,8 @@ librw_1.so: task-1_1.c
 librw_2.so: task-1_2.c
 	$(CC) $(CFLAGS) -shared -fPIC -ldl -o $@ $<
 
+tracer: task-1_3.c
+	$(CC) $(CFLAGS) -o $@ $<
 # Rust example:
 #all:
 #	$(CARGO) build --release

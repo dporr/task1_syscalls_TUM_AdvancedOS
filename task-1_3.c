@@ -1,3 +1,4 @@
+#define _GNU_SOURCE 1//strerrorname_np(3)
 #include <stdio.h> //printf
 #include <sys/ptrace.h> //ptrace(2)
 #include <sys/wait.h> //waitpid
@@ -6,13 +7,14 @@
 #include <sched.h> //pid_t
 #include <signal.h> //raise,
 #include <stdlib.h> //exit(2)
+#include <string.h> //strerror(3), strerrorname_np(3)
+
 int forked(char** argv){
     // printf("Inside child %d my parent is %d\n", getpid(), getppid());
     ptrace(PTRACE_TRACEME,0,0,0);
     raise(SIGSTOP);
     int err = execve(argv[0],  argv, NULL);
-    printf("%d", err);
-    return err;
+    exit(err);
 }
 
 
@@ -27,20 +29,34 @@ int main(int argc, char** argv)
         struct ptrace_syscall_info pt_sysinfo = {0};
         ptrace(PTRACE_SYSCALL, pid, 0, 0); // resume until next syscall entry/exit
         waitpid(pid, &status, 0);
+        if (WIFEXITED(status)) {
+            exit(0); // Exit the loop if the child process has exited
+        }
         ptrace(PTRACE_GET_SYSCALL_INFO, pid, sizeof(struct ptrace_syscall_info), &pt_sysinfo);
-        if(pt_sysinfo.op == PTRACE_SYSCALL_INFO_ENTRY) 
+        if(pt_sysinfo.op == PTRACE_SYSCALL_INFO_ENTRY && (pt_sysinfo.entry.nr == 0 || pt_sysinfo.entry.nr == 1) ) 
         {
-            printf("Entered syscall n: %lld\n", pt_sysinfo.entry.nr);
+            if(pt_sysinfo.entry.nr == 0) printf(">> read");
+            if(pt_sysinfo.entry.nr == 1) printf(">> write");
+            printf("(%d, 0x%llx, %lld) = ",
+                (int) pt_sysinfo.entry.args[0],        
+                pt_sysinfo.entry.args[1],        
+                pt_sysinfo.entry.args[2]  
+            );
+            ptrace(PTRACE_SYSCALL, pid, 0, 0); 
+            waitpid(pid, &status, 0);
+            ptrace(PTRACE_GET_SYSCALL_INFO, pid, sizeof(struct ptrace_syscall_info), &pt_sysinfo);
+            if(pt_sysinfo.op == PTRACE_SYSCALL_INFO_EXIT){
+                if(pt_sysinfo.exit.is_error != 0){
+                    printf("-1 %s %s\n",
+                    strerrorname_np((int) -pt_sysinfo.exit.rval),
+                    strerror((int) -pt_sysinfo.exit.rval)
+                    );
+                }else
+                {
+                    printf("%d\n", (int) pt_sysinfo.exit.rval);
+                }
+            }
         }
-        else if (pt_sysinfo.op == PTRACE_SYSCALL_INFO_EXIT)
-        {
-            printf("Exited syscall return value: %lld\n", pt_sysinfo.exit.rval);
-        }else{
-            printf("Not stopped at syscall op is: %d\n", pt_sysinfo.op);
-        }
-
-        
-       
     }
 
     return 0;

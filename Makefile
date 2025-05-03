@@ -10,7 +10,7 @@ RUSTFLAGS ?= -g
 # this target should build all executables for all tests
 
 # C example:
-all: librw_1.so librw_2.so
+all: librw_1.so librw_2.so tracer
 librw_1.so: task-1_1.c
 	$(CC) $(CFLAGS) -shared -fPIC -ldl -o $@ $<
 
@@ -26,3 +26,6 @@ tracer: task-1_3.c
 # Usually there is no need to modify this
 check: all
 	$(MAKE) -C tests check
+
+clean:
+	rm -Rf tracer librw_1.so librw_2.so

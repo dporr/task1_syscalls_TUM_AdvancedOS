@@ -178,10 +178,10 @@ def run_project_executable(
 ) -> "subprocess.CompletedProcess[Text]":
     return run(
         [find_project_executable(exe)] + args,
-        extra_env,
-        stdin,
-        stdout,
-        stderr,
+        extra_env=extra_env,
+        stdin=stdin,
+        stdout=stdout,
+        stderr=stderr,
         input=input,
         check=check,
         timeout=timeout,

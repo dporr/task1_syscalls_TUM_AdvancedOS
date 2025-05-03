@@ -2,7 +2,7 @@
 
 import os
 import tempfile
-
+from time import sleep
 from testsupport import run, subtest, warn, test_root, run_project_executable
 
 
@@ -18,9 +18,8 @@ def main() -> None:
 
         # Run the test program
         with subtest("Checking read and write tracing"):
-            with open(f"{tmpdir}/stderr", "w+") as stderr, open(
-                f"{tmpdir}/stdout", "w+"
-            ) as stdout:
+            with open(f"{tmpdir}/stderr", "w") as stderr, open(
+                f"{tmpdir}/stdout", "w+", buffering=1) as stdout:
                 run_project_executable(
                     "tracer",
                     args=[str(test_tracer), f"{tmpdir}/rdn.txt"],

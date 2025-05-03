@@ -1,4 +1,5 @@
 #define _GNU_SOURCE 1//strerrorname_np(3)
+#define _ISOC99_SOURCE 1 //snprintf
 #include <stdio.h> //printf
 #include <sys/ptrace.h> //ptrace(2)
 #include <sys/wait.h> //waitpid
@@ -35,25 +36,34 @@ int main(int argc, char** argv)
         ptrace(PTRACE_GET_SYSCALL_INFO, pid, sizeof(struct ptrace_syscall_info), &pt_sysinfo);
         if(pt_sysinfo.op == PTRACE_SYSCALL_INFO_ENTRY && (pt_sysinfo.entry.nr == 0 || pt_sysinfo.entry.nr == 1) ) 
         {
-            if(pt_sysinfo.entry.nr == 0) printf(">> read");
-            if(pt_sysinfo.entry.nr == 1) printf(">> write");
-            printf("(%d, 0x%llx, %lld) = ",
+            char *syscall_args = malloc(120);
+            if(syscall_args == NULL){
+                perror("malloc");
+                exit(EXIT_FAILURE);
+            }
+            char *syscall_name = (pt_sysinfo.entry.nr == 0) ? "read" : "write";
+            snprintf(syscall_args, 120, "%s(%d, 0x%llx, %lld) = ",
+                syscall_name,
                 (int) pt_sysinfo.entry.args[0],        
                 pt_sysinfo.entry.args[1],        
-                pt_sysinfo.entry.args[2]  
-            );
+                pt_sysinfo.entry.args[2] );
+
             ptrace(PTRACE_SYSCALL, pid, 0, 0); 
             waitpid(pid, &status, 0);
             ptrace(PTRACE_GET_SYSCALL_INFO, pid, sizeof(struct ptrace_syscall_info), &pt_sysinfo);
             if(pt_sysinfo.op == PTRACE_SYSCALL_INFO_EXIT){
                 if(pt_sysinfo.exit.is_error != 0){
-                    printf("-1 %s %s\n",
+                    fprintf(stderr,"%s -1 %s (%s)\n",
+                    syscall_args,
                     strerrorname_np((int) -pt_sysinfo.exit.rval),
                     strerror((int) -pt_sysinfo.exit.rval)
                     );
+                    fflush(stderr);
                 }else
                 {
-                    printf("%d\n", (int) pt_sysinfo.exit.rval);
+                    printf("%s %d\n", 
+                        syscall_args,
+                        (int) pt_sysinfo.exit.rval);
                 }
             }
         }
